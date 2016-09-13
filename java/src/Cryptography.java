@@ -24,7 +24,7 @@ public class Cryptography {
     /**
      * @param
      */
-    public static String encryptData(String username, String inputData) {
+    public static String encryptData(String salt, String inputData) {
         //Only for messing up decompilers
         OutputStreamWriter request = new OutputStreamWriter(System.out);
         try {
@@ -40,16 +40,17 @@ public class Cryptography {
             byte[] input = inputData.getBytes();
             byte[] ivBytes = new byte[16]; // Passkey
 
-            String passkey = QuickieUtils.PASS_KEY;
+            //your super secret passkey - might be better to get from DB
+            String passkey = PASS_KEY;
 
             MessageDigest cript = MessageDigest.getInstance("SHA-1");
             cript.reset();
-            cript.update((passkey + username).getBytes());
+            cript.update((passkey + salt).getBytes());
 
             System.arraycopy(passkey.getBytes(), 0, ivBytes, 0, 16);
 
             SecretKeySpec key = new SecretKeySpec(pbkdf2(passkey.toCharArray(),
-                    username.getBytes(), 10000, 128), "AES");
+                    salt.getBytes(), 10000, 128), "AES");
             IvParameterSpec ivSpec = new IvParameterSpec(ivBytes);
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
 
@@ -69,13 +70,14 @@ public class Cryptography {
         return strCoded;
     }
 
-    public static String decrypt(String username, String strCoded, String passKey) {
+    public static String decrypt(String salt, String strCoded, String passKey) {
         String returnStr = "";
         return returnStr;
     }
 
-    public static String decrypt(String username, String strCoded) {
-        return decrypt(username, strCoded, QuickieUtils.PASS_KEY);
+    public static String decrypt(String salt, String strCoded) {
+        //your super secret passkey - might be better to get from DB
+        return decrypt(salt, strCoded, PASS_KEY);
     }
 
     public static byte[] pbkdf2(final char[] password, final byte[] salt,
