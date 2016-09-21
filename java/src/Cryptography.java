@@ -71,8 +71,34 @@ public class Cryptography {
     }
 
     public static String decrypt(String salt, String strCoded, String passKey) {
-        String returnStr = "";
-        return returnStr;
+        byte[] input = Base64.decode(strCoded);
+        
+        //byte[] input = "this is the password text".getBytes();
+        byte[] ivBytes = new byte[16]; //Passkey
+        
+        String passkey = passkey;//iv
+        String salt = salt;//salt
+        
+        MessageDigest cript = MessageDigest.getInstance("SHA-1");
+        cript.reset();
+        cript.update((passkey+salt).getBytes());
+        
+        System.arraycopy(passkey.getBytes(), 0, ivBytes, 0, 16);
+        
+        SecretKeySpec key = new SecretKeySpec(pbkdf2(passkey.toCharArray(),salt.getBytes(),10000,128), "AES");
+        IvParameterSpec ivSpec = new IvParameterSpec(ivBytes);
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding","BC");
+        
+        cipher.init(Cipher.DECRYPT_MODE, key,ivSpec);
+        
+        byte[] plainText = new byte[cipher.getOutputSize(input.length)];
+        
+        //int ptLength = cipher.update(input, 0, input.length, plainText, 0);
+        
+        //ptLength += cipher.doFinal(plainText, ptLength);
+        
+        //System.out.println("plain : " + new String(plainText) + " bytes: " + ptLength);
+        return new String(plainText);
     }
 
     public static String decrypt(String salt, String strCoded) {
